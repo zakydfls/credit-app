@@ -1,0 +1,4 @@
+MigrationId,ProductVersion
+20261104115511_InitialCreate,8.0.11
+20261105034426_AddUsers,8.0.11
+20261105054159_AddCreditOwner,8.0.11

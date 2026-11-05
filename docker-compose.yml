@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:16.3
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: credit_application
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    ports:
+      - "5434:5432"
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/credit_application.sql:/docker-entrypoint-initdb.d/01-credit-application.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  migrate:
+    image: postgres:16.3
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - 'export PGPASSWORD="$$(cat /run/secrets/postgres_password)"; exec psql -h db -U postgres -d credit_application -v ON_ERROR_STOP=1 -f /migrations/add_users.sql'
+    secrets:
+      - postgres_password
+    volumes:
+      - ./database/add_users.sql:/migrations/add_users.sql:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8080:8080"
+    secrets:
+      - source: connection_string
+        target: ConnectionStrings__CreditDatabase
+      - source: jwt_signing_key
+        target: Jwt__SigningKey
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+  connection_string:
+    file: ./secrets/connection_string.txt
+  jwt_signing_key:
+    file: ./secrets/jwt_signing_key.txt

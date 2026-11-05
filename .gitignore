@@ -1,0 +1,30 @@
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+secrets/*
+!secrets/*.example
+appsettings.*.local.json
+*.pfx
+*.p12
+*.key
+
+# Database exports may contain user data and password hashes
+database/*_backup.sql
+database/*.backup
+database/*.dump
+database/*.csv
+
+# .NET build and test output
+**/bin/
+**/obj/
+**/TestResults/
+**/coverage.cobertura.xml
+
+# IDE and OS files
+.vs/
+.idea/
+.vscode/settings.json
+*.user
+*.suo
+.DS_Store

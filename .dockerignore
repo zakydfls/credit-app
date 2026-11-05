@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+secrets/
+.vs/
+.idea/
+**/bin/
+**/obj/
+**/TestResults/
+database/*.csv
+database/exports/
+database/*_backup.sql
+database/*.backup
+database/*.dump
