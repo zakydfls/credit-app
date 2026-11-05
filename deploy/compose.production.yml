@@ -36,6 +36,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
+      Swagger__Enabled: "true"
     ports:
       - "127.0.0.1:${API_PORT:-18080}:8080"
     secrets:

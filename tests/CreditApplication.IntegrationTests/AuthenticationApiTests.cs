@@ -30,7 +30,7 @@ public sealed class AuthenticationApiTests : IDisposable
         _client = _factory.CreateClient();
     }
 
-    private static WebApplicationFactory<Program> CreateFactory(string databaseName, bool seedDemoUser, string environment) =>
+    private static WebApplicationFactory<Program> CreateFactory(string databaseName, bool seedDemoUser, string environment, bool enableSwagger = false) =>
         new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(environment);
@@ -41,6 +41,7 @@ public sealed class AuthenticationApiTests : IDisposable
                 {
                     ["ConnectionStrings:CreditDatabase"] = "Host=localhost;Database=test;Username=test;Password=test",
                     ["SeedDemoUser"] = seedDemoUser.ToString(),
+                    ["Swagger:Enabled"] = enableSwagger.ToString(),
                     ["Jwt:Issuer"] = "test-issuer",
                     ["Jwt:Audience"] = "test-audience",
                     ["Jwt:SigningKey"] = "test-signing-key-at-least-32-characters-long"
@@ -59,6 +60,19 @@ public sealed class AuthenticationApiTests : IDisposable
                 });
             });
         });
+
+    [Theory]
+    [InlineData(false, HttpStatusCode.NotFound)]
+    [InlineData(true, HttpStatusCode.OK)]
+    public async Task ProductionSwagger_FollowsConfiguration(bool enabled, HttpStatusCode expectedStatus)
+    {
+        using var factory = CreateFactory(Guid.NewGuid().ToString(), false, "Production", enabled);
+        using var client = factory.CreateClient();
+        using var response = await client.GetAsync("/swagger/v1/swagger.json");
+        Assert.Equal(expectedStatus, response.StatusCode);
+        using var uiResponse = await client.GetAsync("/swagger/index.html");
+        Assert.Equal(expectedStatus, uiResponse.StatusCode);
+    }
 
     [Fact]
     public async Task DevelopmentStartup_SeedsDemoUser_AndRepeatDoesNotOverwritePassword()

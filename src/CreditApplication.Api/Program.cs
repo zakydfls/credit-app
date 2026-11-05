@@ -67,7 +67,7 @@ if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("SeedDem
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Swagger:Enabled"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
