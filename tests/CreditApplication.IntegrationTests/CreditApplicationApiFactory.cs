@@ -19,6 +19,8 @@ public sealed class CreditApplicationApiFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("Jwt:SigningKey", "integration-test-signing-key-at-least-32-bytes-long");
+        builder.UseSetting("ConnectionStrings:CreditDatabase", "Host=localhost;Database=test;Username=test;Password=test");
         builder.ConfigureAppConfiguration((_, configuration) =>
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
